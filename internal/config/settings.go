@@ -22,16 +22,24 @@ type optionValidator func(string, interface{}) error
 // a list of settings that need option validators
 var optionValidators = map[string]optionValidator{
 	"autosave":     validateNonNegativeValue,
-	"clipboard":    validateClipboard,
+	"clipboard":    validateChoice,
 	"tabsize":      validatePositiveValue,
 	"scrollmargin": validateNonNegativeValue,
 	"scrollspeed":  validateNonNegativeValue,
 	"colorscheme":  validateColorscheme,
 	"colorcolumn":  validateNonNegativeValue,
-	"fileformat":   validateLineEnding,
+	"fileformat":   validateChoice,
 	"encoding":     validateEncoding,
-	"multiopen":    validateMultiOpen,
-	"reload":       validateReload,
+	"multiopen":    validateChoice,
+	"reload":       validateChoice,
+}
+
+// a list of settings with pre-defined choices
+var optionChoices = map[string][]string{
+	"clipboard":  {"internal", "external", "terminal"},
+	"fileformat": {"unix", "dos"},
+	"multiopen":  {"tab", "hsplit", "vsplit"},
+	"reload":     {"prompt", "auto", "disabled"},
 }
 
 // a list of settings that can be globally and locally modified and their
@@ -466,6 +474,26 @@ func validateNonNegativeValue(option string, value interface{}) error {
 	return nil
 }
 
+func validateChoice(option string, value interface{}) error {
+	if choices, ok := optionChoices[option]; ok {
+		val, ok := value.(string)
+		if !ok {
+			return errors.New("Expected string type for " + option)
+		}
+
+		for _, v := range choices {
+			if val == v {
+				return nil
+			}
+		}
+
+		choicesStr := strings.Join(choices, ", ")
+		return errors.New(option + " must be one of: " + choicesStr)
+	}
+
+	return errors.New("Option has no pre-defined choices")
+}
+
 func validateColorscheme(option string, value interface{}) error {
 	colorscheme, ok := value.(string)
 
@@ -480,69 +508,7 @@ func validateColorscheme(option string, value interface{}) error {
 	return nil
 }
 
-func validateClipboard(option string, value interface{}) error {
-	val, ok := value.(string)
-
-	if !ok {
-		return errors.New("Expected string type for clipboard")
-	}
-
-	switch val {
-	case "internal", "external", "terminal":
-	default:
-		return errors.New(option + " must be 'internal', 'external', or 'terminal'")
-	}
-
-	return nil
-}
-
-func validateLineEnding(option string, value interface{}) error {
-	endingType, ok := value.(string)
-
-	if !ok {
-		return errors.New("Expected string type for file format")
-	}
-
-	if endingType != "unix" && endingType != "dos" {
-		return errors.New("File format must be either 'unix' or 'dos'")
-	}
-
-	return nil
-}
-
 func validateEncoding(option string, value interface{}) error {
 	_, err := htmlindex.Get(value.(string))
 	return err
-}
-
-func validateMultiOpen(option string, value interface{}) error {
-	val, ok := value.(string)
-
-	if !ok {
-		return errors.New("Expected string type for multiopen")
-	}
-
-	switch val {
-	case "tab", "hsplit", "vsplit":
-	default:
-		return errors.New(option + " must be 'tab', 'hsplit', or 'vsplit'")
-	}
-
-	return nil
-}
-
-func validateReload(option string, value interface{}) error {
-	val, ok := value.(string)
-
-	if !ok {
-		return errors.New("Expected string type for reload")
-	}
-
-	switch val {
-	case "prompt", "auto", "disabled":
-	default:
-		return errors.New(option + " must be 'prompt', 'auto' or 'disabled'")
-	}
-
-	return nil
 }
