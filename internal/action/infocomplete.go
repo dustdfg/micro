@@ -172,13 +172,6 @@ func OptionValueComplete(b *buffer.Buffer) ([]string, []string) {
 		switch inputOpt {
 		case "colorscheme":
 			_, suggestions = colorschemeComplete(input)
-		case "fileformat":
-			if strings.HasPrefix("unix", input) {
-				suggestions = append(suggestions, "unix")
-			}
-			if strings.HasPrefix("dos", input) {
-				suggestions = append(suggestions, "dos")
-			}
 		case "sucmd":
 			if strings.HasPrefix("sudo", input) {
 				suggestions = append(suggestions, "sudo")
@@ -186,15 +179,13 @@ func OptionValueComplete(b *buffer.Buffer) ([]string, []string) {
 			if strings.HasPrefix("doas", input) {
 				suggestions = append(suggestions, "doas")
 			}
-		case "clipboard":
-			if strings.HasPrefix("external", input) {
-				suggestions = append(suggestions, "external")
-			}
-			if strings.HasPrefix("internal", input) {
-				suggestions = append(suggestions, "internal")
-			}
-			if strings.HasPrefix("terminal", input) {
-				suggestions = append(suggestions, "terminal")
+		default:
+			if choices, ok := config.OptionChoices[inputOpt]; ok {
+				for _, choice := range choices {
+					if strings.HasPrefix(choice, input) {
+						suggestions = append(suggestions, choice)
+					}
+				}
 			}
 		}
 	}
