@@ -131,7 +131,15 @@ func AddRuntimeFilesFromAssets(fileType RTFiletype, directory, pattern string) {
 	}
 	for _, f := range files {
 		if ok, _ := path.Match(pattern, f); ok {
-			AddRuntimeFile(fileType, assetFile(path.Join(directory, f)))
+			if len(realFiles[fileType]) > 0 {
+				for _, rf := range realFiles[fileType] {
+					if f != rf.Name() + ".micro" {
+						AddRuntimeFile(fileType, assetFile(path.Join(directory, f)))
+					}
+				}
+			} else {
+				AddRuntimeFile(fileType, assetFile(path.Join(directory, f)))
+			}
 		}
 	}
 }
