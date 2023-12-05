@@ -100,10 +100,12 @@ func (w *BufWindow) IsActive() bool {
 // ruler, scrollbar and statusline.
 func (w *BufWindow) BufView() View {
 	return View{
-		X:         w.X + w.gutterOffset,
-		Y:         w.Y,
-		Width:     w.bufWidth,
-		Height:    w.bufHeight,
+		Rectangle: screen.Rectangle {
+			X:         w.X + w.gutterOffset,
+			Y:         w.Y,
+			Width:     w.bufWidth,
+			Height:    w.bufHeight,
+		},
 		StartLine: w.StartLine,
 		StartCol:  w.StartCol,
 	}
@@ -365,9 +367,9 @@ func (w *BufWindow) getStyle(style tcell.Style, bloc buffer.Loc) (tcell.Style, b
 func (w *BufWindow) showCursor(x, y int, main bool) {
 	if w.active {
 		if main {
-			screen.ShowCursor(x, y)
+			w.Rectangle.ShowCursor(x, y)
 		} else {
-			screen.ShowFakeCursorMulti(x, y)
+			w.Rectangle.ShowFakeCursorMulti(x, y)
 		}
 	}
 }
@@ -578,7 +580,7 @@ func (w *BufWindow) displayBuffer() {
 				if showcursor {
 					for _, c := range cursors {
 						if c.X == bloc.X && c.Y == bloc.Y && !c.HasSelection() {
-							w.showCursor(w.X+vloc.X, w.Y+vloc.Y, c.Num == 0)
+							w.showCursor(vloc.X, vloc.Y, c.Num == 0)
 						}
 					}
 				}
@@ -797,8 +799,4 @@ func (w *BufWindow) Display() {
 	w.displayStatusLine()
 	w.displayScrollBar()
 	w.displayBuffer()
-}
-
-func (w *BufWindow) SetContent(x, y int, mainc rune, combc []rune, style tcell.Style) {
-	screen.SetContent(w.X+x, w.Y+y, mainc, combc, style)
 }

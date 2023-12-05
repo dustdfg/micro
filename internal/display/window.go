@@ -2,11 +2,11 @@ package display
 
 import (
 	"github.com/zyedidia/micro/v2/internal/buffer"
+	"github.com/zyedidia/micro/v2/internal/screen"
 )
 
 type View struct {
-	X, Y          int // X,Y location of the view
-	Width, Height int // Width and height of the view
+	screen.Rectangle
 
 	// Start line of the view (for vertical scroll)
 	StartLine SLoc

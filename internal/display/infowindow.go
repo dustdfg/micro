@@ -74,10 +74,12 @@ func (i *InfoWindow) LocFromVisual(vloc buffer.Loc) buffer.Loc {
 
 func (i *InfoWindow) BufView() View {
 	return View{
-		X:         0,
-		Y:         i.Y,
-		Width:     i.Width,
-		Height:    1,
+		Rectangle: screen.Rectangle {
+			X:         0,
+			Y:         i.Y,
+			Width:     i.Width,
+			Height:    1,
+		},
 		StartLine: SLoc{0, 0},
 		StartCol:  0,
 	}

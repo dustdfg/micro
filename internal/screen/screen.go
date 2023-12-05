@@ -62,6 +62,30 @@ type screenCell struct {
 
 var lastCursor screenCell
 
+
+// Wrapper around raw methods from this package
+// Provides relative api for windows
+type Rectangle struct {
+	X, Y          int // X,Y location of the rectangle
+	Width, Height int // Width and height of the rectangle
+}
+
+func (r *Rectangle) SetContent(x, y int, mainc rune, combc []rune, style tcell.Style) {
+	SetContent(r.X+x, r.Y+y, mainc, combc, style)
+}
+
+func (r *Rectangle) ShowFakeCursor(x, y int) {
+	ShowFakeCursor(r.X+x, r.Y+y)
+}
+
+func (r *Rectangle) ShowFakeCursorMulti(x, y int) {
+	ShowFakeCursorMulti(r.X+x, r.Y+y)
+}
+
+func (r *Rectangle) ShowCursor(x, y int) {
+	ShowCursor(r.X+x, r.Y+y)
+}
+
 // ShowFakeCursor displays a cursor at the given position by modifying the
 // style of the given column instead of actually using the terminal cursor
 // This can be useful in certain terminals such as the windows console where

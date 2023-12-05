@@ -50,7 +50,7 @@ func (w *TermWindow) LocFromVisual(vloc buffer.Loc) buffer.Loc {
 func (w *TermWindow) Clear() {
 	for y := 0; y < w.Height; y++ {
 		for x := 0; x < w.Width; x++ {
-			screen.SetContent(w.X+x, w.Y+y, ' ', nil, config.DefStyle)
+			w.SetContent(x, y, ' ', nil, config.DefStyle)
 		}
 	}
 }
@@ -87,7 +87,7 @@ func (w *TermWindow) Display() {
 				st = st.Reverse(true)
 			}
 
-			screen.SetContent(w.X+x, w.Y+y, c, nil, st)
+			w.SetContent(x, y, c, nil, st)
 		}
 	}
 	if config.GetGlobalOption("statusline").(bool) {
@@ -102,14 +102,14 @@ func (w *TermWindow) Display() {
 			if x < textLen {
 				r, combc, size := util.DecodeCharacter(text)
 				text = text[size:]
-				screen.SetContent(w.X+x, w.Y+w.Height, r, combc, statusLineStyle)
+				screen.SetContent(x, w.Height, r, combc, statusLineStyle)
 			} else {
-				screen.SetContent(w.X+x, w.Y+w.Height, ' ', nil, statusLineStyle)
+				screen.SetContent(x, w.Height, ' ', nil, statusLineStyle)
 			}
 		}
 	}
 	if w.State.CursorVisible() && w.active {
 		curx, cury := w.State.Cursor()
-		screen.ShowCursor(curx+w.X, cury+w.Y)
+		w.ShowCursor(curx, cury)
 	}
 }
