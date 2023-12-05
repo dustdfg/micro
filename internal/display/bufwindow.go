@@ -202,7 +202,7 @@ func (w *BufWindow) getStartInfo(n, lineN int) ([]byte, int, int, *tcell.Style) 
 func (w *BufWindow) Clear() {
 	for y := 0; y < w.Height; y++ {
 		for x := 0; x < w.Width; x++ {
-			screen.SetContent(w.X+x, w.Y+y, ' ', nil, config.DefStyle)
+			w.SetContent(x, y, ' ', nil, config.DefStyle)
 		}
 	}
 }
@@ -283,7 +283,7 @@ func (w *BufWindow) drawGutter(vloc *buffer.Loc, bloc *buffer.Loc) {
 		}
 	}
 	for i := 0; i < 2 && vloc.X < w.gutterOffset; i++ {
-		screen.SetContent(w.X+vloc.X, w.Y+vloc.Y, char, nil, s)
+		w.SetContent(vloc.X, vloc.Y, char, nil, s)
 		vloc.X++
 	}
 }
@@ -316,7 +316,7 @@ func (w *BufWindow) drawDiffGutter(backgroundStyle tcell.Style, softwrapped bool
 		style = style.Foreground(foreground)
 	}
 
-	screen.SetContent(w.X+vloc.X, w.Y+vloc.Y, symbol, nil, style)
+	w.SetContent(vloc.X, vloc.Y, symbol, nil, style)
 	vloc.X++
 }
 
@@ -332,22 +332,22 @@ func (w *BufWindow) drawLineNum(lineNumStyle tcell.Style, softwrapped bool, vloc
 
 	// Write the spaces before the line number if necessary
 	for i := 0; i < w.maxLineNumLength-len(lineNum) && vloc.X < w.gutterOffset; i++ {
-		screen.SetContent(w.X+vloc.X, w.Y+vloc.Y, ' ', nil, lineNumStyle)
+		w.SetContent(vloc.X, vloc.Y, ' ', nil, lineNumStyle)
 		vloc.X++
 	}
 	// Write the actual line number
 	for i := 0; i < len(lineNum) && vloc.X < w.gutterOffset; i++ {
 		if softwrapped || (w.bufWidth == 0 && w.Buf.Settings["softwrap"] == true) {
-			screen.SetContent(w.X+vloc.X, w.Y+vloc.Y, ' ', nil, lineNumStyle)
+			w.SetContent(vloc.X, vloc.Y, ' ', nil, lineNumStyle)
 		} else {
-			screen.SetContent(w.X+vloc.X, w.Y+vloc.Y, lineNum[i], nil, lineNumStyle)
+			w.SetContent(vloc.X, vloc.Y, lineNum[i], nil, lineNumStyle)
 		}
 		vloc.X++
 	}
 
 	// Write the extra space
 	if vloc.X < w.gutterOffset {
-		screen.SetContent(w.X+vloc.X, w.Y+vloc.Y, ' ', nil, lineNumStyle)
+		w.SetContent(vloc.X, vloc.Y, ' ', nil, lineNumStyle)
 		vloc.X++
 	}
 }
@@ -573,7 +573,7 @@ func (w *BufWindow) displayBuffer() {
 					}
 				}
 
-				screen.SetContent(w.X+vloc.X, w.Y+vloc.Y, r, combc, style)
+				w.SetContent(vloc.X, vloc.Y, r, combc, style)
 
 				if showcursor {
 					for _, c := range cursors {
@@ -720,7 +720,7 @@ func (w *BufWindow) displayBuffer() {
 					curStyle = style.Background(fg)
 				}
 			}
-			screen.SetContent(i+w.X, vloc.Y+w.Y, ' ', nil, curStyle)
+			w.SetContent(i, vloc.Y, ' ', nil, curStyle)
 		}
 
 		if vloc.X != maxWidth {
@@ -758,20 +758,20 @@ func (w *BufWindow) displayStatusLine() {
 			dividerStyle = dividerStyle.Reverse(true)
 		}
 
-		for x := w.X; x < w.X+w.Width; x++ {
-			screen.SetContent(x, w.Y+w.Height-1, divchar, combc, dividerStyle)
+		for x := 0; x < w.Width; x++ {
+			w.SetContent(x, w.Height-1, divchar, combc, dividerStyle)
 		}
 	}
 }
 
 func (w *BufWindow) displayScrollBar() {
 	if w.Buf.Settings["scrollbar"].(bool) && w.Buf.LinesNum() > w.Height {
-		scrollX := w.X + w.Width - 1
+		scrollX := w.Width - 1
 		barsize := int(float64(w.Height) / float64(w.Buf.LinesNum()) * float64(w.Height))
 		if barsize < 1 {
 			barsize = 1
 		}
-		barstart := w.Y + int(float64(w.StartLine.Line)/float64(w.Buf.LinesNum())*float64(w.Height))
+		barstart := int(float64(w.StartLine.Line)/float64(w.Buf.LinesNum())*float64(w.Height))
 
 		scrollBarStyle := config.DefStyle.Reverse(true)
 		if style, ok := config.Colorscheme["scrollbar"]; ok {
@@ -784,8 +784,8 @@ func (w *BufWindow) displayScrollBar() {
 		}
 		scrollBarRune := []rune(scrollBarChar)
 
-		for y := barstart; y < util.Min(barstart+barsize, w.Y+w.bufHeight); y++ {
-			screen.SetContent(scrollX, y, scrollBarRune[0], nil, scrollBarStyle)
+		for y := barstart; y < util.Min(barstart+barsize, w.bufHeight); y++ {
+			w.SetContent(scrollX, y, scrollBarRune[0], nil, scrollBarStyle)
 		}
 	}
 }
@@ -797,4 +797,8 @@ func (w *BufWindow) Display() {
 	w.displayStatusLine()
 	w.displayScrollBar()
 	w.displayBuffer()
+}
+
+func (w *BufWindow) SetContent(x, y int, mainc rune, combc []rune, style tcell.Style) {
+	screen.SetContent(w.X+x, w.Y+y, mainc, combc, style)
 }
