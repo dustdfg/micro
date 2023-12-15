@@ -322,10 +322,11 @@ func (h *BufPane) OpenCmd(args []string) {
 
 // ToggleLogCmd toggles the log view
 func (h *BufPane) ToggleLogCmd(args []string) {
-	if h.Buf.Type != buffer.BTLog {
+	if LogBufPane == nil {
 		h.OpenLogBuf()
 	} else {
-		h.Quit()
+		LogBufPane.Quit()
+		LogBufPane = nil
 	}
 }
 
