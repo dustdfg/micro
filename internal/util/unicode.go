@@ -67,30 +67,11 @@ func DecodeCharacterInString(str string) (rune, []rune, int) {
 // CharacterCount returns the number of characters in a byte array
 // Similar to utf8.RuneCount but for unicode characters
 func CharacterCount(b []byte) int {
-	s := 0
-
-	for len(b) > 0 {
-		r, size := utf8.DecodeRune(b)
-		if !isMark(r) {
-			s++
-		}
-
-		b = b[size:]
-	}
-
-	return s
+	return len(b)
 }
 
 // CharacterCount returns the number of characters in a string
 // Similar to utf8.RuneCountInString but for unicode characters
 func CharacterCountInString(str string) int {
-	s := 0
-
-	for _, r := range str {
-		if !isMark(r) {
-			s++
-		}
-	}
-
-	return s
+	return len(str)
 }
